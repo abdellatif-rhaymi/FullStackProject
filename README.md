@@ -27,3 +27,11 @@ cd FullStackProject
 Lancer les conteneurs :
 
 docker-compose up -d
+
+2. Connectez-vous avec les identifiants par défaut :
+
+- **Username** : `admin`
+- **Password** : `admin`
+
+3. Une fois connecté, vous verrez le dashboard provisionné automatiquement.  
+Il contient les métriques du backend Spring Boot, collectées par Prometheus.
