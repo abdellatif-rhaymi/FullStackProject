@@ -1,0 +1,94 @@
+services:
+  mariadb:
+    image: mariadb:11.2
+    container_name: magasin-voiture-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: compagnie
+      
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - voiture-network
+
+  backend:
+    build: ./backend
+    container_name: magasin-voiture-backend
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/compagnie
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus,metrics
+      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
+    ports:
+      - "8065:8065"
+    depends_on:
+      - mariadb
+    networks:
+      - voiture-network
+
+  frontend:
+    build: ./frontend
+    container_name: magasin-voiture-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - voiture-network
+
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: magasin-voiture-prometheus
+    restart: unless-stopped
+    user: root  
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - voiture-network
+    depends_on:
+      - backend
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: magasin-voiture-grafana
+    restart: unless-stopped
+    user: root
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_PATHS_PROVISIONING: /etc/grafana/provisioning
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - voiture-network
+    depends_on:
+      - prometheus
+
+
+
+volumes:
+  mariadb_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  voiture-network:
+    driver: bridge

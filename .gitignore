@@ -1,0 +1,18 @@
+# Node & React
+frontend/node_modules/
+frontend/build/
+
+# Java (Spring Boot)
+backend/target/
+
+# Docker volumes / data
+mariadb_data/
+prometheus_data/
+grafana_data/
+
+# IDE / système
+.vscode/
+.idea/
+*.log
+.DS_Store
+
