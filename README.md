@@ -22,7 +22,7 @@ Démarrage
 Cloner le projet :
 
 git clone https://github.com/abdellatif-rhaymi/FullStackProject.git
-cd FullStack
+cd FullStackProject
 
 Lancer les conteneurs :
 
